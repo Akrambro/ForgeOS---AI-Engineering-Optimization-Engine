@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #05090d;
+    color: #e2e8f0;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+}
+
+/* Technical Industrial Grid Background */
+.bg-command-grid {
+  background-color: #05090d;
+  background-image: 
+    radial-gradient(rgba(73, 230, 255, 0.08) 1px, transparent 0),
+    linear-gradient(to right, rgba(73, 230, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(73, 230, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px, 48px 48px, 48px 48px;
+  background-position: -1px -1px;
+}
+
+/* Translucent Technical Panel Styling */
+.panel-tech {
+  background-color: rgba(8, 17, 23, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(73, 230, 255, 0.15);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+.panel-tech-accent {
+  background-color: rgba(12, 23, 32, 0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(98, 246, 180, 0.2);
+}
+
+/* Monospace Engineering Metric Formatting */
+.font-mono-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* Custom Tactical Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #05090d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(73, 230, 255, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(73, 230, 255, 0.4);
+}

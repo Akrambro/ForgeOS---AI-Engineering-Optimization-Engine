@@ -1,8 +1,12 @@
 import express from "express";
 import path from "path";
+import { mkdir } from "node:fs/promises";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { createPhase01Api } from "./src/api/phase01Api";
+import { PythonFunctionAdapter } from "./src/core/evaluation/pythonFunctionAdapter";
+import { JsonRunRepository } from "./src/core/persistence/runRepository";
 
 dotenv.config();
 
@@ -19,6 +23,19 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json({ limit: "10mb" }));
+
+  const phase01DataDirectory = path.join(process.cwd(), "data");
+  await mkdir(phase01DataDirectory, { recursive: true });
+  const phase01Evaluators = new Map();
+  phase01Evaluators.set("sphere", new PythonFunctionAdapter({
+    scriptPath: path.join(process.cwd(), "scripts", "phase01_sphere.py"),
+    objectiveNames: ["value"],
+    evaluatorVersion: "sphere-1",
+  }));
+  app.use("/api/phase01", createPhase01Api(
+    new JsonRunRepository(path.join(phase01DataDirectory, "state.json")),
+    phase01Evaluators,
+  ));
 
   // API Routes
   app.get("/api/health", (req, res) => {

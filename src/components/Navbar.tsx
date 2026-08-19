@@ -1,296 +1,88 @@
-import React from 'react';
-import { 
-  Activity, 
-  Cpu, 
-  Play, 
-  GitFork, 
-  Sparkles, 
-  Flame, 
-  PlusCircle,
-  RotateCcw,
-  FlaskConical,
-  ShieldCheck,
-  Bot,
-  Terminal,
-  Radio,
-  Server,
-  Zap,
-  Search
+import React, { useState } from 'react';
+import {
+  Activity, Box, ChevronDown, Cpu, FlaskConical, Layers, Play,
+  RotateCcw, Search, Server, ShieldCheck, Sparkles, Zap,
 } from 'lucide-react';
 
-export type ActiveTab = 
-  | 'dashboard' 
-  | 'wizard' 
-  | 'studio' 
-  | 'run_details' 
-  | 'pareto' 
-  | 'benchmarks' 
-  | 'surrogate' 
-  | 'hitl'
-  | 'rl'
-  | 'autonomous'
-  | 'audit'
-  | 'ev_demo'
-  | 'tests';
+export type ActiveTab =
+  | 'dashboard' | 'wizard' | 'studio' | 'run_details' | 'pareto'
+  | 'benchmarks' | 'surrogate' | 'hitl' | 'rl' | 'autonomous'
+  | 'audit' | 'ev_demo' | 'tests';
 
 interface NavbarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  isRunning: boolean;
+  isRunning?: boolean;
   activeRunName?: string;
   onResetDefaults?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({
-  activeTab,
-  setActiveTab,
-  isRunning,
-  activeRunName,
-  onResetDefaults,
-}) => {
+type NavItem = { id: ActiveTab; label: string; status?: string };
+type NavGroup = { label: string; icon: React.ElementType; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  { label: 'Command', icon: Activity, items: [{ id: 'dashboard', label: 'Campaign overview' }, { id: 'wizard', label: 'New problem' }] },
+  { label: 'Optimize', icon: Play, items: [{ id: 'studio', label: 'Optimization runs' }, { id: 'pareto', label: 'Pareto explorer' }] },
+  { label: 'Simulate', icon: Box, items: [{ id: 'ev_demo', label: 'EV digital twin' }, { id: 'benchmarks', label: 'Simulator adapters' }] },
+  { label: 'Experiment', icon: FlaskConical, items: [{ id: 'audit', label: 'Experiment audit' }, { id: 'hitl', label: 'HIL steering', status: 'Experimental' }] },
+  { label: 'Models', icon: Sparkles, items: [{ id: 'surrogate', label: 'Surrogate lab' }, { id: 'rl', label: 'RL policy', status: 'Experimental' }, { id: 'autonomous', label: 'Autonomous loop', status: 'Experimental' }] },
+  { label: 'Validate', icon: ShieldCheck, items: [{ id: 'tests', label: 'System verification' }] },
+];
+
+interface NavMenuProps {
+  group: NavGroup;
+  activeTab: ActiveTab;
+  setActiveTab: (tab: ActiveTab) => void;
+  open: boolean;
+  setOpen: (label: string | null) => void;
+}
+
+const NavMenu: React.FC<NavMenuProps> = ({ group, activeTab, setActiveTab, open, setOpen }) => {
+  const Icon = group.icon;
+  const isActive = group.items.some(item => item.id === activeTab);
+
   return (
-    <header className="sticky top-0 z-50 bg-[#05090d]/95 backdrop-blur-md border-b border-[#49e6ff]/20 text-slate-100 shadow-2xl">
-      {/* Top Telemetry Status Strip */}
-      <div className="bg-[#03060a] border-b border-[#49e6ff]/10 px-4 py-1 text-[11px] font-mono flex items-center justify-between text-slate-400 overflow-x-auto">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#62f6b4] animate-pulse"></span>
-            <span className="text-slate-300 font-semibold tracking-wider uppercase">FORGEOS ENGINE v2.4</span>
-          </div>
-          <span className="text-slate-700">|</span>
-          <div className="flex items-center space-x-1 text-[#49e6ff]">
-            <Server className="w-3 h-3" />
-            <span>COMPUTE ● 12/12 WORKERS</span>
-          </div>
-          <span className="text-slate-700">|</span>
-          <div className="flex items-center space-x-1 text-[#62f6b4]">
-            <Zap className="w-3 h-3" />
-            <span>SIMULATORS ● 3/3 ONLINE</span>
-          </div>
-          <span className="text-slate-700">|</span>
-          <div className="flex items-center space-x-1 text-[#a97bff]">
-            <Sparkles className="w-3 h-3" />
-            <span>GP SURROGATE ● VALIDATED (R² 0.94)</span>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1 text-slate-400">
-            <Radio className="w-3 h-3 text-[#62f6b4]" />
-            <span>DATA FABRIC ● SECURE</span>
-          </div>
-          <span className="text-slate-700">|</span>
-          <div className="text-slate-400">
-            TIME LATENCY: <span className="text-[#62f6b4]">1.2ms</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Navigation Console */}
-      <div className="max-w-[1700px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
-          {/* Brand Identity & Mission Title */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-            <div className="w-8 h-8 rounded bg-[#0c1720] border border-[#49e6ff]/40 flex items-center justify-center shadow-[0_0_12px_rgba(73,230,255,0.25)]">
-              <Cpu className="w-4 h-4 text-[#49e6ff]" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-sm tracking-wider uppercase font-mono text-white">FORGEOS</span>
-                <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#49e6ff]/10 text-[#49e6ff] border border-[#49e6ff]/30 font-semibold">
-                  MISSION CONTROL
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 font-mono tracking-tight">Autonomous Engineering Command System</p>
-            </div>
-          </div>
-
-          {/* Mission Control Navigation Bar */}
-          <nav className="hidden xl:flex items-center space-x-1">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'dashboard'
-                  ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/50 shadow-[0_0_10px_rgba(73,230,255,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 text-[#49e6ff]" />
-              <span>Command Center</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('wizard')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'wizard'
-                  ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/50 shadow-[0_0_10px_rgba(73,230,255,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>New Problem</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('studio')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'studio'
-                  ? 'bg-[#0c1720] text-[#62f6b4] border border-[#62f6b4]/50 shadow-[0_0_10px_rgba(98,246,180,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <Play className="w-3.5 h-3.5 text-[#62f6b4]" />
-              <span>Optimization Studio</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('pareto')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'pareto'
-                  ? 'bg-[#0c1720] text-[#62f6b4] border border-[#62f6b4]/50 shadow-[0_0_10px_rgba(98,246,180,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <GitFork className="w-3.5 h-3.5 text-[#62f6b4]" />
-              <span>Pareto Front</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('surrogate')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'surrogate'
-                  ? 'bg-[#0c1720] text-[#a97bff] border border-[#a97bff]/50 shadow-[0_0_10px_rgba(169,123,255,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#a97bff]" />
-              <span>Surrogate Lab</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('hitl')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'hitl'
-                  ? 'bg-[#0c1720] text-[#ffb84d] border border-[#ffb84d]/50 shadow-[0_0_10px_rgba(255,184,77,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#ffb84d]" />
-              <span>HITL Steering</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('rl')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'rl'
-                  ? 'bg-[#0c1720] text-[#a97bff] border border-[#a97bff]/50 shadow-[0_0_10px_rgba(169,123,255,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <Bot className="w-3.5 h-3.5 text-[#a97bff]" />
-              <span>RL Policy</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('autonomous')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'autonomous'
-                  ? 'bg-[#0c1720] text-[#a97bff] border border-[#a97bff]/50 shadow-[0_0_10px_rgba(169,123,255,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <Terminal className="w-3.5 h-3.5 text-[#a97bff]" />
-              <span>Autonomous Loop</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('benchmarks')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'benchmarks'
-                  ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/50 shadow-[0_0_10px_rgba(73,230,255,0.2)]'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <FlaskConical className="w-3.5 h-3.5 text-[#49e6ff]" />
-              <span>Validation Lab</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('audit')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'audit'
-                  ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/50'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#49e6ff]" />
-              <span>Merkle Audit</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('ev_demo')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'ev_demo'
-                  ? 'bg-[#0c1720] text-[#ffb84d] border border-[#ffb84d]/50'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <Flame className="w-3.5 h-3.5 text-[#ffb84d]" />
-              <span>EV Thermal Twin</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('tests')}
-              className={`px-2.5 py-1.5 rounded text-xs font-mono tracking-wide uppercase transition-all flex items-center space-x-1.5 ${
-                activeTab === 'tests'
-                  ? 'bg-[#0c1720] text-[#62f6b4] border border-[#62f6b4]/50'
-                  : 'text-slate-400 hover:bg-[#081117] hover:text-slate-200 border border-transparent'
-              }`}
-            >
-              <FlaskConical className="w-3.5 h-3.5 text-[#62f6b4]" />
-              <span>System Verification</span>
-            </button>
-          </nav>
-
-          {/* Engine Status Badge & System Actions */}
-          <div className="flex items-center space-x-3">
-            {isRunning ? (
-              <div className="flex items-center space-x-2 bg-[#0c1720] border border-[#62f6b4]/60 px-3 py-1 rounded text-xs text-[#62f6b4] font-mono animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-[#62f6b4]"></span>
-                <span className="uppercase tracking-wider">RUNNING: {activeRunName || 'CAMPAIGN'}</span>
-              </div>
-            ) : (
-              <div className="hidden sm:flex items-center space-x-2 bg-[#081117] border border-[#62f6b4]/30 px-3 py-1 rounded text-xs text-[#62f6b4] font-mono">
-                <span className="w-2 h-2 rounded-full bg-[#62f6b4]"></span>
-                <span className="uppercase tracking-wider">ENGINE ONLINE</span>
-              </div>
-            )}
-
-            {onResetDefaults && (
-              <button
-                onClick={onResetDefaults}
-                title="Reset workspace to factory presets"
-                className="p-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-[#081117] border border-slate-800 transition-colors"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Nav Drawer Sub-Bar */}
-      <div className="xl:hidden flex items-center overflow-x-auto px-4 py-2 space-x-2 border-t border-[#49e6ff]/10 bg-[#03060a] text-xs font-mono">
-        <button onClick={() => setActiveTab('dashboard')} className={`px-2 py-1 rounded ${activeTab === 'dashboard' ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/40' : 'text-slate-400'}`}>Command Center</button>
-        <button onClick={() => setActiveTab('wizard')} className={`px-2 py-1 rounded ${activeTab === 'wizard' ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/40' : 'text-slate-400'}`}>New Problem</button>
-        <button onClick={() => setActiveTab('studio')} className={`px-2 py-1 rounded ${activeTab === 'studio' ? 'bg-[#0c1720] text-[#62f6b4] border border-[#62f6b4]/40' : 'text-slate-400'}`}>Studio</button>
-        <button onClick={() => setActiveTab('pareto')} className={`px-2 py-1 rounded ${activeTab === 'pareto' ? 'bg-[#0c1720] text-[#62f6b4] border border-[#62f6b4]/40' : 'text-slate-400'}`}>Pareto</button>
-        <button onClick={() => setActiveTab('surrogate')} className={`px-2 py-1 rounded ${activeTab === 'surrogate' ? 'bg-[#0c1720] text-[#a97bff] border border-[#a97bff]/40' : 'text-slate-400'}`}>Surrogate</button>
-        <button onClick={() => setActiveTab('benchmarks')} className={`px-2 py-1 rounded ${activeTab === 'benchmarks' ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/40' : 'text-slate-400'}`}>Benchmarks</button>
-        <button onClick={() => setActiveTab('audit')} className={`px-2 py-1 rounded ${activeTab === 'audit' ? 'bg-[#0c1720] text-[#49e6ff] border border-[#49e6ff]/40' : 'text-slate-400'}`}>Merkle Audit</button>
-        <button onClick={() => setActiveTab('ev_demo')} className={`px-2 py-1 rounded ${activeTab === 'ev_demo' ? 'bg-[#0c1720] text-[#ffb84d] border border-[#ffb84d]/40' : 'text-slate-400'}`}>EV Twin</button>
-        <button onClick={() => setActiveTab('tests')} className={`px-2 py-1 rounded ${activeTab === 'tests' ? 'bg-[#0c1720] text-[#62f6b4] border border-[#62f6b4]/40' : 'text-slate-400'}`}>Verification</button>
-      </div>
-    </header>
+    <div className="relative">
+      <button onClick={() => setOpen(open ? null : group.label)} className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-[11px] font-mono font-bold uppercase tracking-[0.12em] transition-colors ${isActive ? 'border-[#49e6ff] text-[#49e6ff]' : 'border-transparent text-slate-400 hover:text-slate-100'}`}>
+        <Icon className="h-3.5 w-3.5" /><span>{group.label}</span><ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <div className="absolute right-0 top-full z-50 mt-2 min-w-[220px] border border-slate-700 bg-[#0a141b] p-1 shadow-2xl">
+        {group.items.map(item => <button key={item.id} onClick={() => { setActiveTab(item.id); setOpen(null); }} className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-xs font-mono transition-colors ${activeTab === item.id ? 'bg-[#10232b] text-[#62f6b4]' : 'text-slate-300 hover:bg-[#0e1c24] hover:text-white'}`}>
+          <span>{item.label}</span>{item.status && <span className="ml-3 text-[9px] uppercase tracking-wider text-[#ffb84d]">{item.status}</span>}
+        </button>)}
+      </div>}
+    </div>
   );
+};
+
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, isRunning = false, activeRunName, onResetDefaults }) => {
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+
+  return <header className="sticky top-0 z-50 border-b border-[#49e6ff]/15 bg-[#05090d]/95 text-slate-100 backdrop-blur-md">
+    <div className="flex items-center justify-between gap-4 border-b border-[#49e6ff]/10 bg-[#03060a] px-4 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-500 sm:px-6">
+      <div className="flex items-center gap-4 whitespace-nowrap">
+        <span className="flex items-center gap-2 font-bold text-slate-300"><span className="h-1.5 w-1.5 rounded-full bg-[#62f6b4]" />FORGEOS / ENGINE v2.4</span>
+        <span className="hidden items-center gap-1.5 text-[#49e6ff] md:flex"><Server className="h-3 w-3" />COMPUTE 12/12</span>
+        <span className="hidden items-center gap-1.5 text-[#62f6b4] lg:flex"><Zap className="h-3 w-3" />SIMULATORS 3/3</span>
+        <span className="hidden items-center gap-1.5 text-slate-400 xl:flex"><Layers className="h-3 w-3" />DATA FABRIC SECURE</span>
+      </div><span className="hidden sm:block">LATENCY <b className="text-[#62f6b4]">1.2ms</b></span>
+    </div>
+    <div className="mx-auto flex h-16 max-w-[1750px] items-center justify-between gap-4 px-4 sm:px-6">
+      <button onClick={() => setActiveTab('dashboard')} className="flex min-w-0 items-center gap-3 text-left">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#49e6ff]/40 bg-[#0c1720] text-[#49e6ff]"><Cpu className="h-4 w-4" /></span>
+        <span className="min-w-0"><span className="block font-mono text-sm font-bold tracking-[0.18em] text-white">FORGEOS</span><span className="hidden truncate text-[9px] font-mono uppercase tracking-wider text-slate-500 sm:block">AI engineering optimization engine</span></span>
+      </button>
+      <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
+        {navGroups.map(group => <NavMenu key={group.label} group={group} activeTab={activeTab} setActiveTab={setActiveTab} open={openGroup === group.label} setOpen={setOpenGroup} />)}
+      </nav>
+      <div className="flex shrink-0 items-center gap-2">
+        <button title="Search workspace" className="hidden border border-slate-800 p-2 text-slate-400 hover:text-white sm:block"><Search className="h-4 w-4" /></button>
+        <div className={`flex items-center gap-2 border px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider ${isRunning ? 'border-[#62f6b4]/60 text-[#62f6b4]' : 'border-slate-800 text-slate-400'}`}><span className="h-1.5 w-1.5 rounded-full bg-[#62f6b4]" /><span className="hidden sm:inline">{isRunning ? `RUNNING ${activeRunName || 'CAMPAIGN'}` : 'ENGINE ONLINE'}</span></div>
+        {onResetDefaults && <button onClick={onResetDefaults} title="Reset workspace to factory presets" className="border border-slate-800 p-2 text-slate-400 hover:text-white"><RotateCcw className="h-4 w-4" /></button>}
+      </div>
+    </div>
+    <nav className="flex gap-1 overflow-x-auto border-t border-[#49e6ff]/10 bg-[#03060a] px-4 py-2 lg:hidden" aria-label="Mobile navigation">
+      {navGroups.map(group => group.items.map(item => <button key={item.id} onClick={() => setActiveTab(item.id)} className={`whitespace-nowrap px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider ${activeTab === item.id ? 'bg-[#10232b] text-[#49e6ff]' : 'text-slate-500'}`}>{group.label}: {item.label}</button>))}
+    </nav>
+  </header>;
 };

@@ -12,9 +12,9 @@
 .bg-command-grid {
   background-color: #05090d;
   background-image: 
-    radial-gradient(rgba(73, 230, 255, 0.08) 1px, transparent 0),
-    linear-gradient(to right, rgba(73, 230, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(73, 230, 255, 0.03) 1px, transparent 1px);
+    radial-gradient(rgba(73, 230, 255, 0.05) 1px, transparent 0),
+    linear-gradient(to right, rgba(73, 230, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(73, 230, 255, 0.02) 1px, transparent 1px);
   background-size: 24px 24px, 48px 48px, 48px 48px;
   background-position: -1px -1px;
 }
@@ -23,14 +23,14 @@
 .panel-tech {
   background-color: rgba(8, 17, 23, 0.85);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(73, 230, 255, 0.15);
+  border: 1px solid rgba(73, 230, 255, 0.11);
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
 }
 
 .panel-tech-accent {
   background-color: rgba(12, 23, 32, 0.9);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(98, 246, 180, 0.2);
+  border: 1px solid rgba(98, 246, 180, 0.15);
 }
 
 /* Monospace Engineering Metric Formatting */

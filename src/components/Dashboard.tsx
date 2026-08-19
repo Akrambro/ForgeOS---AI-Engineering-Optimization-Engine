@@ -52,7 +52,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const handleLaunch = onLaunchProblem || onLaunchNewRun || (() => {});
   const handleViewDetails = onViewRunDetails || onSelectRun || (() => {});
-  const [selectedBenchmarkId, setSelectedBenchmarkId] = useState<string>('bm-a');
+  const [fieldMode, setFieldMode] = useState<'thermal' | 'flow' | 'pressure'>('thermal');
+  const [selectedCandidate, setSelectedCandidate] = useState(121);
 
   // Aggregate Metrics
   const totalEvaluations = runs.reduce((acc, r) => acc + (r.trials?.length || 0), 0) || 1248;
@@ -60,6 +61,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const activeRuns = runs.filter(r => r.status === 'running' || r.status === 'pending');
   const feasibleEvaluations = runs.reduce((acc, r) => acc + (r.trials?.filter(t => t.feasible).length || 0), 0) || 1202;
   const feasibilityRate = totalEvaluations > 0 ? ((feasibleEvaluations / totalEvaluations) * 100).toFixed(1) : '96.3';
+  const campaignState = activeRuns.length > 0 ? 'RUNNING' : 'READY';
+  const campaignProgress = activeRuns[0]?.progress ?? 68;
 
   return (
     <div className="space-y-6 text-slate-100 font-sans pb-12">
@@ -74,7 +77,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="flex items-center space-x-3 text-xs font-mono">
               <span className="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-[#62f6b4]/10 text-[#62f6b4] border border-[#62f6b4]/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#62f6b4] animate-ping"></span>
-                <span className="font-bold tracking-wider uppercase">ACTIVE CAMPAIGN ● RUNNING 68%</span>
+                <span className="font-bold tracking-wider uppercase">ACTIVE CAMPAIGN ● {campaignState} {campaignProgress}%</span>
               </span>
               <span className="text-slate-500">|</span>
               <span className="text-[#49e6ff] font-semibold">CAMPAIGN ID: EVT-024</span>
@@ -158,6 +161,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="text-[10px] font-mono text-slate-400 mt-0.5">Confidence: 92% (dHV &lt; 0.001)</div>
           </div>
         </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-3 border-t border-[#49e6ff]/15 pt-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="flex items-start gap-3 font-mono text-[10px]">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[#a97bff]" />
+            <div>
+              <div className="uppercase tracking-wider text-[#a97bff]">AI DECISION TRACE / CANDIDATE #{selectedCandidate}</div>
+              <p className="mt-1 max-w-3xl text-slate-400">Expected improvement is high while predicted pressure remains below the constraint boundary. The candidate also samples an under-observed coolant-flow region.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center font-mono text-[10px]">
+            <div className="border border-slate-800 bg-[#05090d] px-2 py-1.5"><span className="block text-slate-500">EI SCORE</span><b className="text-[#62f6b4]">0.084</b></div>
+            <div className="border border-slate-800 bg-[#05090d] px-2 py-1.5"><span className="block text-slate-500">RISK</span><b className="text-[#62f6b4]">LOW</b></div>
+            <div className="border border-slate-800 bg-[#05090d] px-2 py-1.5"><span className="block text-slate-500">CONFIDENCE</span><b className="text-[#49e6ff]">91%</b></div>
+          </div>
+        </div>
       </div>
 
       {/* LAYER 2: INTELLIGENCE & PHYSICS — PRIMARY 2-COLUMN COMMAND MATRIX */}
@@ -233,7 +251,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="flex items-center justify-between border-b border-[#49e6ff]/10 pb-2">
                 <div className="flex items-center space-x-2">
                   <Compass className="w-4 h-4 text-[#a97bff]" />
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white">SEARCH SPACE & CANDIDATE POINTS</h3>
+                  <div>
+                    <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white">AI SEARCH SPACE</h3>
+                    <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500">Acquisition field / live proposal</span>
+                  </div>
                 </div>
               </div>
 
@@ -241,19 +262,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="h-40 bg-[#05090d] border border-slate-800 rounded relative p-2 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-command-grid opacity-60"></div>
                 
-                {/* Points */}
-                <div className="absolute top-[20%] left-[25%] w-2 h-2 rounded-full bg-[#62f6b4] shadow-[0_0_8px_#62f6b4]"></div>
-                <div className="absolute top-[35%] left-[60%] w-2.5 h-2.5 rounded-full bg-[#49e6ff] shadow-[0_0_8px_#49e6ff]"></div>
-                <div className="absolute top-[70%] left-[45%] w-3 h-3 rounded-full bg-[#ffb84d] shadow-[0_0_8px_#ffb84d] animate-ping"></div>
-                <div className="absolute top-[50%] left-[80%] w-2 h-2 rounded-full bg-[#a97bff]"></div>
-                <div className="absolute top-[80%] left-[20%] w-2 h-2 rounded-full bg-slate-600"></div>
+                <div className="absolute inset-0 opacity-60" style={{ background: 'radial-gradient(ellipse at 68% 38%, rgba(98,246,180,.18), transparent 24%), radial-gradient(ellipse at 30% 72%, rgba(73,230,255,.14), transparent 30%)' }}></div>
+                <div className="absolute top-[20%] left-[25%] h-2 w-2 rounded-full bg-[#62f6b4]"></div>
+                <button onClick={() => setSelectedCandidate(120)} className="absolute top-[35%] left-[60%] h-2.5 w-2.5 rounded-full bg-[#49e6ff] shadow-[0_0_8px_#49e6ff]" aria-label="Select candidate 120"></button>
+                <button onClick={() => setSelectedCandidate(121)} className="absolute top-[70%] left-[45%] h-3 w-3 rounded-full bg-[#ffb84d] shadow-[0_0_8px_#ffb84d] animate-pulse" aria-label="Select candidate 121"></button>
+                <div className="absolute top-[50%] left-[80%] h-2 w-2 rounded-full bg-[#a97bff]"></div>
+                <div className="absolute top-[80%] left-[20%] h-2 w-2 rounded-full bg-slate-600"></div>
+                <div className="absolute bottom-[22%] right-[20%] h-14 w-20 rotate-[-18deg] border-b border-r border-[#62f6b4]/60"></div>
 
                 <div className="absolute bottom-2 left-2 text-[10px] font-mono text-slate-400 bg-[#05090d]/90 px-2 py-0.5 rounded border border-slate-800">
                   X1: Inlet Temp | X2: Flow Rate
                 </div>
                 <div className="absolute top-2 right-2 text-[10px] font-mono text-[#ffb84d] bg-[#05090d]/90 px-2 py-0.5 rounded border border-[#ffb84d]/40">
-                  ● Next Candidate #122
+                  <span className="text-[#62f6b4]">● Candidate #{selectedCandidate}</span> SELECTED
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between border border-[#ffb84d]/25 bg-[#05090d] px-2 py-1.5 font-mono text-[10px]">
+                <span className="text-slate-400">NEXT ACTION</span>
+                <span className="text-[#ffb84d]">SIMULATING CANDIDATE #{selectedCandidate}</span>
               </div>
 
               {/* AI Strategy Breakdown */}
@@ -283,26 +310,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <Box className="w-4 h-4 text-[#ffb84d]" />
                   <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white">DIGITAL TWIN PHYSICAL SCHEMATIC</h3>
                 </div>
+                <div className="flex border border-slate-800 bg-[#05090d] p-0.5 font-mono text-[9px] uppercase">
+                  {(['thermal', 'flow', 'pressure'] as const).map(mode => (
+                    <button key={mode} onClick={() => setFieldMode(mode)} className={`px-1.5 py-1 ${fieldMode === mode ? 'bg-[#ffb84d]/15 text-[#ffb84d]' : 'text-slate-500 hover:text-slate-300'}`}>{mode}</button>
+                  ))}
+                </div>
               </div>
 
               {/* Thermal Field Diagram */}
               <div className="h-40 bg-[#05090d] border border-slate-800 rounded relative p-3 flex flex-col justify-between font-mono text-[10px]">
                 <div className="flex justify-between text-slate-400">
-                  <span className="text-[#ffb84d]">EV BATTERY MODULE</span>
+                  <span className="text-[#ffb84d]">EV BATTERY MODULE / {fieldMode.toUpperCase()} FIELD</span>
                   <span className="text-[#62f6b4]">COOLANT FLOW: 18.2 L/min</span>
                 </div>
 
-                {/* Circuit Schematic Diagram */}
-                <div className="border border-[#49e6ff]/30 rounded p-2 bg-[#081117]/90 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">COOLANT INLET</span>
-                    <span className="text-[#49e6ff] font-bold">18.0 °C</span>
+                <div className="relative flex items-center justify-between gap-2 border border-[#49e6ff]/30 bg-[#081117]/90 p-2">
+                  <div className="absolute left-[18%] right-[18%] top-1/2 h-px bg-[#49e6ff]/50"></div>
+                  <div className="z-10 w-[30%] border border-[#49e6ff]/40 bg-[#0c1720] p-2 text-center">
+                    <span className="block text-[9px] text-slate-400">COOLANT INLET</span><strong className="text-[#49e6ff]">18.0 °C</strong>
                   </div>
-                  <div className="h-2 w-full bg-gradient-to-r from-[#49e6ff] via-[#ffb84d] to-[#ff5964] rounded"></div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">BATTERY MAX TEMP</span>
-                    <span className="text-[#ff5964] font-bold">42.7 °C</span>
+                  <div className={`z-10 flex h-16 w-[36%] items-center justify-center border bg-[#0c1720] text-center ${fieldMode === 'thermal' ? 'border-[#ff5964]/70 shadow-[inset_0_0_18px_rgba(255,89,100,.22)]' : fieldMode === 'flow' ? 'border-[#49e6ff]/70 shadow-[inset_0_0_18px_rgba(73,230,255,.2)]' : 'border-[#a97bff]/70 shadow-[inset_0_0_18px_rgba(169,123,255,.2)]'}`}>
+                    <span><span className="block text-[9px] text-slate-400">BATTERY PACK</span><strong className="text-white">42.7 °C</strong></span>
                   </div>
+                  <div className="z-10 w-[30%] border border-[#62f6b4]/40 bg-[#0c1720] p-2 text-center"><span className="block text-[9px] text-slate-400">INVERTER / MOTOR</span><strong className="text-[#62f6b4]">NOMINAL</strong></div>
                 </div>
 
                 <div className="flex justify-between text-[9px] text-slate-500">
@@ -484,7 +514,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="flex items-start space-x-2 text-slate-300">
                 <span className="text-[#62f6b4] font-bold">22:14:07</span>
                 <span className="text-slate-600">●</span>
-                <span>Candidate <span className="text-[#62f6b4]">#121</span> generated via Expected Improvement</span>
+                <span>Candidate <span className="text-[#62f6b4]">#121</span> selected <span className="text-slate-500">/</span> reason: high expected improvement + low constraint risk <span className="text-[#ffb84d]">(8.4% / 91% confidence)</span></span>
               </div>
 
               <div className="flex items-start space-x-2 text-slate-300">
@@ -522,7 +552,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="flex items-center justify-between border-b border-[#49e6ff]/10 pb-3">
           <div className="flex items-center space-x-2">
             <Sliders className="w-4 h-4 text-[#49e6ff]" />
-            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">ENGINEERING PROBLEM REPOSITORY</h2>
+            <div>
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">ENGINEERING PROBLEM FABRIC</h2>
+              <p className="mt-0.5 text-[9px] font-mono uppercase tracking-wider text-slate-500">Versioned design spaces / benchmark instruments</p>
+            </div>
           </div>
           <button
             onClick={() => setActiveTab('wizard')}
@@ -542,6 +575,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 className="bg-[#05090d] border border-slate-800 hover:border-[#49e6ff]/50 rounded p-3.5 transition-all flex flex-col justify-between"
               >
                 <div>
+                  <div className="mb-3 h-16 border border-slate-800/80 bg-[radial-gradient(circle_at_50%_50%,rgba(98,246,180,.25),transparent_25%),linear-gradient(135deg,rgba(73,230,255,.08),transparent_55%)] relative overflow-hidden">
+                    <div className="absolute inset-x-4 top-1/2 h-px bg-[#49e6ff]/30"></div>
+                    <div className="absolute left-1/2 top-1/2 h-8 w-14 -translate-x-1/2 -translate-y-1/2 border border-[#62f6b4]/50"></div>
+                    <span className="absolute bottom-1 left-2 text-[8px] font-mono uppercase tracking-wider text-slate-500">{prob.category || 'general'} / field preview</span>
+                  </div>
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-bold font-mono text-xs text-slate-100 truncate">{prob.name}</h3>
                     <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#49e6ff]/10 text-[#49e6ff] border border-[#49e6ff]/30">

@@ -16,6 +16,7 @@ import { MasterTestRunner } from './components/Phase2TestRunner';
 import { LocalDatabase } from './storage/db';
 import { BENCHMARK_CATALOG } from './core/benchmarks/benchmarkSuite';
 import { Problem, OptimizationRun } from './types';
+import { fetchPhase01State } from './api/phase01Client';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -26,21 +27,33 @@ export default function App() {
 
   // Initialize data on mount
   useEffect(() => {
+    let cancelled = false;
     // 1. Seed benchmark problems if empty
     let loadedProblems = LocalDatabase.getProblems();
     if (loadedProblems.length === 0) {
       loadedProblems = BENCHMARK_CATALOG.map(b => b.problem);
       loadedProblems.forEach(p => LocalDatabase.saveProblem(p));
     }
+    const loadedRuns = LocalDatabase.getRuns();
     setProblems(loadedProblems);
     setSelectedProblem(loadedProblems[0] || null);
-
-    // 2. Load historical runs
-    const loadedRuns = LocalDatabase.getRuns();
     setRuns(loadedRuns);
-    if (loadedRuns.length > 0) {
-      setSelectedRun(loadedRuns[0]);
-    }
+    if (loadedRuns.length > 0) setSelectedRun(loadedRuns[0]);
+
+    void fetchPhase01State().then(remoteState => {
+      if (cancelled) return;
+      const mergedProblems = [...remoteState.problems, ...loadedProblems.filter(problem => !remoteState.problems.some(remote => remote.id === problem.id))];
+      const remoteRunIds = new Set(remoteState.runs.map(run => run.id));
+      const mergedRuns = [...remoteState.runs, ...loadedRuns.filter(run => !remoteRunIds.has(run.id))];
+      setProblems(mergedProblems);
+      setSelectedProblem(current => current && mergedProblems.some(problem => problem.id === current.id) ? current : mergedProblems[0] || null);
+      setRuns(mergedRuns);
+      setSelectedRun(current => current && mergedRuns.some(run => run.id === current.id) ? current : mergedRuns[0] || null);
+    }).catch(() => {
+      // Local storage remains the honest fallback when the API is unavailable.
+    });
+
+    return () => { cancelled = true; };
   }, []);
 
   const handleSelectProblem = (problem: Problem) => {

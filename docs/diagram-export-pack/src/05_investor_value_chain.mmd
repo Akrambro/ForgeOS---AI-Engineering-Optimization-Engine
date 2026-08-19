@@ -1,0 +1,16 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'ui-sans-serif, system-ui, sans-serif', 'primaryColor': '#dbeafe', 'primaryTextColor': '#0f172a', 'primaryBorderColor': '#2563eb', 'lineColor': '#0f766e', 'secondaryColor': '#dcfce7', 'tertiaryColor': '#ffedd5'}}}%%
+flowchart TD
+  A[High-cost engineering evaluations] --> B[ForgeOS optimization loop]
+  B --> C[Lower truth-evaluation count]
+  C --> D[Faster time-to-decision]
+  D --> E[Better constrained design quality]
+  E --> F[Higher confidence in deployment decisions]
+
+  G[Governance + auditability] --> F
+  H[Reproducibility + phase gates] --> F
+
+  classDef blue fill:#dbeafe,stroke:#2563eb,color:#0f172a;
+  classDef teal fill:#ccfbf1,stroke:#0f766e,color:#134e4a;
+  classDef orange fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+  class A,B,C,D,E,F blue;
+  class G,H teal;

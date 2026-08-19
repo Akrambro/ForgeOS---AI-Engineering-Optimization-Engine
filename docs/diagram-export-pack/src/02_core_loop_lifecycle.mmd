@@ -1,0 +1,20 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'ui-sans-serif, system-ui, sans-serif', 'lineColor': '#2563eb','actorBorder': '#0f766e','actorBkg': '#ccfbf1','actorTextColor': '#134e4a','signalColor': '#0f172a','signalTextColor': '#0f172a'}}}%%
+sequenceDiagram
+  participant H as Human Engineer
+  participant UI as Frontend UI
+  participant API as ForgeOS API
+  participant C as Optimization Core
+  participant A as Evaluation Adapter
+  participant R as Run Store
+
+  H->>UI: Define objective, constraints, and budget
+  UI->>API: Start optimization run
+  API->>C: Initialize seeded run
+  loop Until stop condition
+    C->>A: Evaluate candidate
+    A-->>C: Objectives + constraints + status
+    C->>R: Persist trial with feasibility state
+    C->>C: Update next candidate policy
+  end
+  C-->>API: Best feasible result and diagnostics
+  API-->>UI: Render run report and trade-offs

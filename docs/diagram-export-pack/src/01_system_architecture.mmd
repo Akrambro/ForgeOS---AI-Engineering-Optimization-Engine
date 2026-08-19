@@ -1,0 +1,17 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'ui-sans-serif, system-ui, sans-serif', 'primaryColor': '#dbeafe','primaryTextColor': '#0f172a','primaryBorderColor': '#2563eb','lineColor': '#0f766e','secondaryColor': '#dcfce7','tertiaryColor': '#ffedd5'}}}%%
+flowchart TD
+  U[Engineer / Product Team] --> FE[React + Vite Frontend]
+  FE --> API[Express API]
+  API --> ORCH[Optimization Orchestrator]
+  ORCH --> ALG[Algorithms\nRandom Search / DE / BO / NSGA-II]
+  ORCH --> EVAL[Evaluation Adapter Contract]
+  EVAL --> PY[Python Function Adapter]
+  EVAL --> EXT[External Simulator Adapter Path]
+  ORCH --> STORE[Run + Trial Persistence]
+  API --> SYNTH[Autonomous Report Synthesis\nDeterministic + Gemini]
+  classDef blue fill:#dbeafe,stroke:#2563eb,color:#0f172a;
+  classDef teal fill:#ccfbf1,stroke:#0f766e,color:#134e4a;
+  classDef orange fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+  class FE,API,ORCH,ALG blue;
+  class EVAL,PY,EXT teal;
+  class STORE,SYNTH orange;

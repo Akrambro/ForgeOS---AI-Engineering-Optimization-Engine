@@ -1,0 +1,18 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'ui-sans-serif, system-ui, sans-serif', 'primaryTextColor': '#0f172a', 'lineColor': '#ea580c'}}}%%
+flowchart LR
+  P1[01 Core] --> P2[02 Benchmark]
+  P2 --> P3[03 Bayesian]
+  P3 --> P4[04 Surrogate Reliability]
+  P4 --> P5[05 Truth Guided]
+  P5 --> P6[06 Multi Objective]
+  P6 --> P7[07 External Simulator]
+  P7 --> P8[08 Daitya Pilot]
+  P8 --> P9[09 Robust Optimization]
+  P9 --> P10[10 HIL]
+  P10 --> P11[11 RL / Adaptive]
+  P11 --> P12[12 Autonomous Loop]
+
+  classDef done fill:#dcfce7,stroke:#166534,color:#14532d;
+  classDef gate fill:#ffedd5,stroke:#f97316,color:#7c2d12;
+  class P1 current;
+  class P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12 gate;
